@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consulta de Expedientes - Poder Judicial</title>
+    <!-- Tailwind CSS para diseño moderno -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        judicial: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            600: '#16a34a',
+                            700: '#15803d',
+                            800: '#166534',
+                            900: '#14532d',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-slate-50 min-h-screen flex flex-col font-sans text-slate-800">
+
+    <!-- Header -->
+    <header class="bg-judicial-800 text-white shadow-md">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div class="flex items-center space-x-3">
+                <svg class="w-8 h-8 text-judicial-100" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                </svg>
+                <div>
+                    <h1 id="txt-title" class="text-xl font-bold">Portal de Expedientes Judiciales</h1>
+                    <p id="txt-subtitle" class="text-xs text-judicial-100">Sistema de Consulta Automatizado</p>
+                </div>
+            </div>
+
+            <!-- Controles: Idioma -->
+            <div class="flex items-center space-x-3">
+                <span id="txt-lang-label" class="text-sm font-medium">Idioma / Language:</span>
+                <select id="lang-select" onchange="changeLanguage(this.value)" class="bg-judicial-700 text-white text-sm rounded px-3 py-1.5 border border-judicial-600 focus:outline-none focus:ring-2 focus:ring-white">
+                    <option value="es">Español</option>
+                    <option value="en">English</option>
+                </select>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 py-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        <!-- Panel de Búsqueda y Datos Automatizados -->
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 lg:col-span-1 h-fit">
+            <h2 id="txt-search-title" class="text-lg font-semibold text-judicial-800 mb-4 pb-2 border-b border-slate-100">Consultar Expediente</h2>
+            
+            <div class="space-y-4">
+                <div>
+                    <label id="txt-label-num" class="block text-sm font-medium text-slate-700 mb-1">N° de Expediente:</label>
+                    <input type="text" id="search-input" placeholder="Ej. EXP-2026-001" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-judicial-600 focus:outline-none text-sm">
+                </div>
+                <button onclick="searchExpediente()" id="txt-btn-search" class="w-full bg-judicial-600 hover:bg-judicial-700 text-white font-medium py-2 px-4 rounded-lg transition-colors text-sm shadow">
+                    Buscar Expediente
+                </button>
+            </div>
+
+            <!-- Datos Rápidos Automatizados -->
+            <div class="mt-6">
+                <h3 id="txt-quick-list" class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Expedientes precargados (Listos):</h3>
+                <div class="space-y-2">
+                    <button onclick="loadDemo('EXP-2026-001')" class="w-full text-left px-3 py-2 bg-judicial-50 hover:bg-judicial-100 rounded-lg text-xs text-judicial-800 font-medium transition-colors flex justify-between items-center">
+                        <span>EXP-2026-001 (Civil)</span>
+                        <span class="text-slate-400">Ver &rarr;</span>
+                    </button>
+                    <button onclick="loadDemo('EXP-2026-002')" class="w-full text-left px-3 py-2 bg-judicial-50 hover:bg-judicial-100 rounded-lg text-xs text-judicial-800 font-medium transition-colors flex justify-between items-center">
+                        <span>EXP-2026-002 (Penal)</span>
+                        <span class="text-slate-400">Ver &rarr;</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Panel de Resultados y Visor -->
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 lg:col-span-2">
+            <h2 id="txt-results-title" class="text-lg font-semibold text-judicial-800 mb-4 pb-2 border-b border-slate-100">Detalles del Expediente</h2>
+
+            <div id="result-container" class="space-y-6">
+                <div class="text-center py-12 text-slate-400">
+                    <svg class="w-12 h-12 mx-auto mb-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    <p id="txt-no-selection">Selecciona o busca un expediente para ver la información automatizada.</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 mt-auto py-4 text-center text-xs text-slate-500">
+        <p id="txt-footer">&copy; 2026 Poder Judicial - Sistema Automatizado de Consulta en Vercel</p>
+    </footer>
+
+    <!-- Lógica de Automatización e Idiomas -->
+    <script>
+        // Datos automatizados listos para entrar
+        const expedientesDB = {
+            "EXP-2026-001": {
+                numero: "EXP-2026-001",
+                juzgado: "1er Juzgado Civil de Puno",
+                demandante: "Yezabel Yenny Apaza Ortega",
+                demandado: "Institución Financiera S.A.",
+                materia: "Obligación de dar suma de dinero",
+                estado: "En Proceso / Activo",
+                ultimaActualizacion: "10 de Octubre, 2026",
+                documentos: [
+                    { nombre: "Demanda Principal.pdf", fecha: "02/05/2026" },
+                    { nombre: "Auto Admisorio.pdf", fecha: "15/06/2026" },
+                    { nombre: "Notificación de Audiencia.pdf", fecha: "28/09/2026" }
+                ]
+            },
+            "EXP-2026-002": {
+                numero: "EXP-2026-002",
+                juzgado: "3er Juzgado Penal de Investigación Preparatoria",
+                demandante: "Ministerio Público",
+                demandado: "Proceso Regular N.N.",
+                materia: "Protección de Derechos",
+                estado: "Concluido / Archivo",
+                ultimaActualizacion: "01 de Septiembre, 2026",
+                documentos: [
+                    { nombre: "Disposición Fiscal.pdf", fecha: "12/03/2026" },
+                    { nombre: "Resolución de Cierre.pdf", fecha: "30/08/2026" }
+                ]
+            }
+        };
+
+        // Traducciones
+        const translations = {
+            es: {
+                title: "Portal de Expedientes Judiciales",
+                subtitle: "Sistema de Consulta Automatizado",
+                langLabel: "Idioma / Language:",
+                searchTitle: "Consultar Expediente",
+                labelNum: "N° de Expediente:",
+                btnSearch: "Buscar Expediente",
+                quickList: "Expedientes precargados (Listos):",
+                resultsTitle: "Detalles del Expediente",
+                noSelection: "Selecciona o busca un expediente para ver la información automatizada.",
+                footer: "© 2026 Poder Judicial - Sistema Automatizado de Consulta en Vercel",
+                lblJuzgado: "Juzgado:",
+                lblDemandante: "Demandante / Parte:",
+                lblDemandado: "Demandado / Contraria:",
+                lblMateria: "Materia:",
+                lblEstado: "Estado Actual:",
+                lblFecha: "Última Actualización:",
+                lblDocs: "Documentos Adjuntos:"
+            },
+            en: {
+                title: "Judicial Case Portal",
+                subtitle: "Automated Inquiry System",
+                langLabel: "Language / Idioma:",
+                searchTitle: "Search Case",
+                labelNum: "Case Number:",
+                btnSearch: "Search Case",
+                quickList: "Preloaded Cases (Ready):",
+                resultsTitle: "Case Details",
+                noSelection: "Select or search a case to view automated information.",
+                footer: "© 2026 Judicial Branch - Automated Inquiry System on Vercel",
+                lblJuzgado: "Court:",
+                lblDemandante: "Plaintiff / Party:",
+                lblDemandado: "Defendant / Counter:",
+                lblMateria: "Subject Matter:",
+                lblEstado: "Current Status:",
+                lblFecha: "Last Updated:",
+                lblDocs: "Attached Documents:"
+            }
+        };
+
+        let currentLang = 'es';
+
+        function changeLanguage(lang) {
+            currentLang = lang;
+            const t = translations[lang];
+            
+            document.getElementById('txt-title').innerText = t.title;
+            document.getElementById('txt-subtitle').innerText = t.subtitle;
+            document.getElementById('txt-lang-label').innerText = t.langLabel;
+            document.getElementById('txt-search-title').innerText = t.searchTitle;
+            document.getElementById('txt-label-num').innerText = t.labelNum;
+            document.getElementById('txt-btn-search').innerText = t.btnSearch;
+            document.getElementById('txt-quick-list').innerText = t.quickList;
+            document.getElementById('txt-results-title').innerText = t.resultsTitle;
+            const noSel = document.getElementById('txt-no-selection');
+            if(noSel) noSel.innerText = t.noSelection;
+            document.getElementById('txt-footer').innerText = t.footer;
+        }
+
+        function loadDemo(num) {
+            document.getElementById('search-input').value = num;
+            searchExpediente();
+        }
+
+        function searchExpediente() {
+            const query = document.getElementById('search-input').value.trim().toUpperCase();
+            const container = document.getElementById('result-container');
+            const t = translations[currentLang];
+
+            if (!expedientesDB[query]) {
+                container.innerHTML = `
+                    <div class="p-4 bg-amber-50 border border-amber-200 rounded-lg text-amber-800 text-sm">
+                        Expediente no encontrado en la base de datos automatizada. Prueba usando: <b>EXP-2026-001</b> o <b>EXP-2026-002</b>.
+                    </div>
+                `;
+                return;
+            }
+
+            const exp = expedientesDB[query];
+            let docsHtml = exp.documentos.map(d => `
+                <li class="flex justify-between items-center py-2 px-3 bg-slate-50 rounded border border-slate-100 text-sm">
+                    <span class="font-medium text-slate-700 flex items-center gap-2">
+                        <svg class="w-4 h-4 text-judicial-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+                        ${d.nombre}
+                    </span>
+                    <span class="text-xs text-slate-400">${d.fecha}</span>
+                </li>
+            `).join('');
+
+            container.innerHTML = `
+                <div class="bg-judicial-50 p-4 rounded-lg border border-judicial-100 mb-4 flex justify-between items-center">
+                    <div>
+                        <span class="text-xs text-judicial-700 font-semibold uppercase tracking-wider">N° Expediente</span>
+                        <h3 class="text-xl font-bold text-judicial-900">${exp.numero}</h3>
+                    </div>
+                    <span class="px-3 py-1 bg-green-100 text-judicial-800 rounded-full text-xs font-bold">${exp.estado}</span>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                    <div class="space-y-1">
+                        <p class="text-slate-500 font-medium">${t.lblJuzgado}</p>
+                        <p class="font-semibold text-slate-800">${exp.juzgado}</p>
+                    </div>
+                    <div class="space-y-1">
+                        <p class="text-slate-500 font-medium">${t.lblMateria}</p>
+                        <p class="font-semibold text-slate-800">${exp.materia}</p>
+                    </div>
+                    <div class="space-y-1">
+                        <p class="text-slate-500 font-medium">${t.lblDemandante}</p>
+                        <p class="font-semibold text-slate-800">${exp.demandante}</p>
+                    </div>
+                    <div class="space-y-1">
+                        <p class="text-slate-500 font-medium">${t.lblDemandado}</p>
+                        <p class="font-semibold text-slate-800">${exp.demandado}</p>
+                    </div>
+                </div>
+
+                <div class="mt-6 pt-4 border-t border-slate-100">
+                    <h4 class="text-sm font-semibold text-slate-700 mb-3">${t.lblDocs}</h4>
+                    <ul class="space-y-2">
+                        ${docsHtml}
+                    </ul>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>
